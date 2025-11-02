@@ -6,6 +6,7 @@ import { prettyJSON } from 'hono/pretty-json'
 import { authMiddleware } from './lib/auth'
 import createApp from './lib/create-app'
 import { errorLogger, honoLogger, requestBodyLogger } from './lib/logger'
+import { rateLimit } from './lib/rate-limit'
 import appRouter from './routes'
 import authRouter from './routes/auth'
 
@@ -14,6 +15,9 @@ const app = createApp()
 app.use('*', honoLogger())
 app.use('*', errorLogger())
 app.use('*', requestBodyLogger())
+
+// Global rate limiting: 100 requests per minute
+app.use('*', rateLimit())
 
 app.use(
   '/*',

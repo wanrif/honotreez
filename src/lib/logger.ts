@@ -277,7 +277,7 @@ export function requestBodyLogger(): MiddlewareHandler {
 
           sanitize(sanitizedBody)
 
-          logger.debug(`[${requestId.slice(0, 8)}] Request Body`, sanitizedBody)
+          logger.debug(`[${requestId}] Request Body`, sanitizedBody)
 
           // Restore body for next middleware
           c.req.bodyCache.json = body
