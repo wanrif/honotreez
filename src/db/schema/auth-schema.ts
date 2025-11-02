@@ -1,9 +1,13 @@
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+
+import { generateId } from '@/lib/utils'
 
 export const user = pgTable(
   'user',
   {
-    id: text('id').primaryKey(),
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => generateId()),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
     emailVerified: boolean('email_verified')
@@ -22,12 +26,14 @@ export const user = pgTable(
     banExpires: timestamp('ban_expires'),
   },
   (table) => [index('email').on(table.email)]
-);
+)
 
 export const session = pgTable(
   'session',
   {
-    id: text('id').primaryKey(),
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => generateId()),
     expiresAt: timestamp('expires_at').notNull(),
     token: text('token').notNull().unique(),
     createdAt: timestamp('created_at').notNull(),
@@ -39,13 +45,18 @@ export const session = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     impersonatedBy: text('impersonated_by'),
   },
-  (table) => [index('session_user_id_index').on(table.userId), index('session_token_index').on(table.token)]
-);
+  (table) => [
+    index('session_user_id_index').on(table.userId),
+    index('session_token_index').on(table.token),
+  ]
+)
 
 export const account = pgTable(
   'account',
   {
-    id: text('id').primaryKey(),
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => generateId()),
     accountId: text('account_id').notNull(),
     providerId: text('provider_id').notNull(),
     userId: text('user_id')
@@ -62,17 +73,23 @@ export const account = pgTable(
     updatedAt: timestamp('updated_at').notNull(),
   },
   (table) => [index('account_user_id_index').on(table.userId)]
-);
+)
 
 export const verification = pgTable(
   'verification',
   {
-    id: text('id').primaryKey(),
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => generateId()),
     identifier: text('identifier').notNull(),
     value: text('value').notNull(),
     expiresAt: timestamp('expires_at').notNull(),
-    createdAt: timestamp('created_at').$defaultFn(() => /* @__PURE__ */ new Date()),
-    updatedAt: timestamp('updated_at').$defaultFn(() => /* @__PURE__ */ new Date()),
+    createdAt: timestamp('created_at').$defaultFn(
+      () => /* @__PURE__ */ new Date()
+    ),
+    updatedAt: timestamp('updated_at').$defaultFn(
+      () => /* @__PURE__ */ new Date()
+    ),
   },
   (table) => [index('verification_identifier_index').on(table.identifier)]
-);
+)

@@ -1,7 +1,7 @@
-import { Hono } from 'hono';
+import { createRouter } from '@/lib/create-app'
 
-const dashboard = new Hono();
+const dashboard = createRouter()
 
-dashboard.get('/', (c) => c.json('OK'));
+dashboard.get('/', (c) => c.json('OK'))
 
-export default dashboard;
+export default dashboard

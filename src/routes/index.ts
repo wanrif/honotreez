@@ -1,10 +1,14 @@
-import { Hono } from 'hono';
-import dashboard from './dashboard';
+import { createRouter } from '@/lib/create-app'
 
-const appRouter = new Hono();
+import dashboard from './dashboard'
 
-appRouter.get('/healthcheck', (c) => c.json('OK'));
-appRouter.route('/dashboard', dashboard);
+const appRouter = createRouter()
 
-type AppRouter = typeof appRouter;
-export { appRouter, AppRouter };
+appRouter.get('/healthcheck', (c) =>
+  c.json({
+    message: 'OK',
+  })
+)
+appRouter.route('/dashboard', dashboard)
+
+export default appRouter
