@@ -127,27 +127,27 @@ This will:
 ### Successful Request
 
 ```
-[2025-11-01 23:07:23.630] [MED-P4TpUAPizpmgkUch3Jpnw] [INCOMING] GET /api/users
-[2025-11-01 23:07:23.630] [MED-P4TpUAPizpmgkUch3Jpnw] [COMPLETED] GET /api/users 200 33ms 1.2 KB
+[2025-11-01 23:07:23.630] [TRX-P4TpUAPizpmgkUch3Jpnw] [INCOMING] GET /api/users
+[2025-11-01 23:07:23.630] [TRX-P4TpUAPizpmgkUch3Jpnw] [COMPLETED] GET /api/users 200 33ms 1.2 KB
 ```
 
 ### Error Request
 
 ```
-[2025-11-01 23:07:54.444] [MED-giFrWMzdYxcaT8bcwRW77] [INCOMING] POST /api/users
-[2025-11-01 23:07:54.445] [MED-giFrWMzdYxcaT8bcwRW77] [ERROR] Database connection timeout
+[2025-11-01 23:07:54.444] [TRX-giFrWMzdYxcaT8bcwRW77] [INCOMING] POST /api/users
+[2025-11-01 23:07:54.445] [TRX-giFrWMzdYxcaT8bcwRW77] [ERROR] Database connection timeout
 Error: Connection timeout after 5000ms
     at Database.connect (db/index.ts:45:12)
     ...
-[2025-11-01 23:07:54.790] [MED-giFrWMzdYxcaT8bcwRW77] [ERROR] POST /api/users 500 334ms
+[2025-11-01 23:07:54.790] [TRX-giFrWMzdYxcaT8bcwRW77] [ERROR] POST /api/users 500 334ms
 ```
 
 ### Slow Request Warning
 
 ```
-[2025-11-01 23:08:29.934] [MED-giFrWMzdYxcaT8bcwRW77] [INCOMING] POST /api/users
+[2025-11-01 23:08:29.934] [TRX-giFrWMzdYxcaT8bcwRW77] [INCOMING] POST /api/users
 [2025-11-01 23:08:29.935] [WARN] Slow request detected: GET /api/reports took 2333ms
-[2025-11-01 23:08:57.464] [MED-Cy1Y2BT1mEib3e1Hd3tP2] [COMPLETED] GET /api/reports 200 2334ms 45.6 KB
+[2025-11-01 23:08:57.464] [TRX-Cy1Y2BT1mEib3e1Hd3tP2] [COMPLETED] GET /api/reports 200 2334ms 45.6 KB
 ```
 
 ### Debug Mode Output
@@ -157,7 +157,7 @@ LOG_LEVEL=debug bun dev
 ```
 
 ```
-[2025-11-01 23:08:57.465] [MED-Lh46N2d7fhmVJBNQCbm28] [INCOMING] POST /api/auth/login?redirect=/dashboard
+[2025-11-01 23:08:57.465] [TRX-Lh46N2d7fhmVJBNQCbm28] [INCOMING] POST /api/auth/login?redirect=/dashboard
 [2025-11-01 23:08:57.790] [DEBUG] Query Parameters
 {
   "redirect": "/dashboard"
@@ -168,7 +168,7 @@ LOG_LEVEL=debug bun dev
   "user-agent": "Mozilla/5.0...",
   "accept": "application/json"
 }
-[2025-11-01 23:08:57.792] [MED-Lh46N2d7fhmVJBNQCbm28] Request Body
+[2025-11-01 23:08:57.792] [TRX-Lh46N2d7fhmVJBNQCbm28] Request Body
 {
   "email": "user@example.com",
   "password": "***REDACTED***"
@@ -178,7 +178,7 @@ LOG_LEVEL=debug bun dev
   "content-type": "application/json",
   "set-cookie": "session=..."
 }
-[2025-11-01 23:08:57.893] [MED-Lh46N2d7fhmVJBNQCbm28] [COMPLETED] POST /api/auth/login 200 104ms
+[2025-11-01 23:08:57.893] [TRX-Lh46N2d7fhmVJBNQCbm28] [COMPLETED] POST /api/auth/login 200 104ms
 ```
 
 ## Best Practices

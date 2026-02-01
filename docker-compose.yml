@@ -1,0 +1,81 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16.6-alpine
+    container_name: honotreez-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-honotreez}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - honotreez-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Development Application
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: honotreez-app-dev
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-honotreez}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3001}
+      - BETTER_AUTH_SECRET=luYYBx1E3HWkKVWDLR8JX5N9VzAafBgm
+      - BETTER_AUTH_URL=http://localhost:3000
+    volumes:
+      - ./src:/usr/src/app/src:ro
+      - ./package.json:/usr/src/app/package.json:ro
+      - ./tsconfig.json:/usr/src/app/tsconfig.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - honotreez-network
+    profiles:
+      - dev
+
+  # Production Application
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      target: production
+    container_name: honotreez-app-prod
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-honotreez}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3001}
+      - BETTER_AUTH_SECRET=luYYBx1E3HWkKVWDLR8JX5N9VzAafBgm
+      - BETTER_AUTH_URL=http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - honotreez-network
+    profiles:
+      - prod
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  honotreez-network:
+    driver: bridge

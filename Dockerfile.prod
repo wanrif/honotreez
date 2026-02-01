@@ -1,0 +1,49 @@
+# Production Dockerfile for honotreez
+# Multi-stage build optimized for minimal image size and security
+
+# Use specific Bun version (pinned, not latest)
+FROM oven/bun:1-alpine AS base
+WORKDIR /usr/src/app
+
+# Install dependencies in separate stages for better caching
+FROM base AS install
+
+# Install production dependencies only
+RUN mkdir -p /temp/prod
+COPY package.json bun.lock /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
+
+# Copy production dependencies and source code
+FROM base AS prerelease
+COPY --from=install /temp/prod/node_modules node_modules
+COPY . .
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Final production image
+FROM base AS production
+
+# Create non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy only production dependencies and necessary files
+COPY --from=install --chown=appuser:appgroup /temp/prod/node_modules node_modules
+COPY --chown=appuser:appgroup package.json tsconfig.json ./
+COPY --chown=appuser:appgroup src ./src
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 3000
+
+# Health check to verify the app is running
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
+  CMD bun run --bun -e "fetch('http://localhost:3000/api/healthcheck').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
+
+# Run the application
+CMD ["bun", "run", "src/index.ts"]

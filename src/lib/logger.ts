@@ -125,8 +125,8 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
 }
 
-// Custom Hono logger middleware
-export function honoLogger(): MiddlewareHandler {
+// Combined logger middleware - handles request logging, body logging, and error logging
+export function combinedLogger(): MiddlewareHandler {
   return async (c: Context, next) => {
     const start = Date.now()
     const method = c.req.method
@@ -134,7 +134,7 @@ export function honoLogger(): MiddlewareHandler {
     const customId = customAlphabet(
       '12346789ABCDEFGHJKLMNPQRTUVWXYabcdefghijkmnpqrtwxyz'
     )
-    const requestId = `LOGX-${customId()}`
+    const requestId = `TRX-${customId()}`
 
     // Store request ID in context
     c.set('requestId', requestId)
@@ -165,6 +165,48 @@ export function honoLogger(): MiddlewareHandler {
       logger.debug('Request Headers', headers)
     }
 
+    // Log request body for POST/PUT/PATCH requests
+    if (['POST', 'PUT', 'PATCH'].includes(method)) {
+      try {
+        const contentType = c.req.header('content-type')
+        if (contentType?.includes('application/json')) {
+          // Clone the request to avoid consuming the original body
+          const clonedRequest = c.req.raw.clone()
+          const body = await clonedRequest.json()
+
+          // Sanitize sensitive fields
+          const sanitizedBody = JSON.parse(JSON.stringify(body))
+          const sensitiveFields = [
+            'password',
+            'token',
+            'secret',
+            'apiKey',
+            'creditCard',
+          ]
+
+          const sanitize = (obj: Record<string, unknown>) => {
+            for (const key in obj) {
+              if (
+                sensitiveFields.some((field) =>
+                  key.toLowerCase().includes(field.toLowerCase())
+                )
+              ) {
+                obj[key] = '***REDACTED***'
+              } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                sanitize(obj[key] as Record<string, unknown>)
+              }
+            }
+          }
+
+          sanitize(sanitizedBody)
+
+          logger.debug(`[${requestId}] Request Body`, sanitizedBody)
+        }
+      } catch {
+        // Silently fail if body parsing fails
+      }
+    }
+
     let error: Error | undefined
 
     try {
@@ -173,12 +215,24 @@ export function honoLogger(): MiddlewareHandler {
       c.header('X-Request-ID', requestId)
     } catch (err) {
       error = err instanceof Error ? err : new Error(String(err))
+
       // Log error details
       const errorColored = `${colors.red}${colors.bright}[ERROR]${colors.reset}`
       console.error(
         `${colors.gray}[${dayjs().format('YYYY-MM-DD HH:mm:ss.SSS')}]${colors.reset} ${requestIdColored} ${errorColored} ${error.message}`
       )
       console.error(error.stack)
+
+      // Additional error logging
+      logger.error('Unhandled error in request', {
+        requestId,
+        method,
+        path,
+        error: error.message,
+        stack: error.stack,
+        timestamp: dayjs().format('YYYY-MM-DD HH:mm:ss.SSS'),
+      })
+
       throw err
     } finally {
       const end = Date.now()
@@ -215,78 +269,6 @@ export function honoLogger(): MiddlewareHandler {
         logger.debug('Response Headers', responseHeaders)
       }
     }
-  }
-}
-
-// Error logger middleware
-export function errorLogger(): MiddlewareHandler {
-  return async (c: Context, next) => {
-    try {
-      await next()
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err))
-      const requestId = c.get('requestId') || 'unknown'
-
-      logger.error('Unhandled error in request', {
-        requestId,
-        method: c.req.method,
-        path: c.req.path,
-        error: error.message,
-        stack: error.stack,
-        timestamp: dayjs().format('YYYY-MM-DD HH:mm:ss.SSS'),
-      })
-
-      throw err
-    }
-  }
-}
-
-// Request body logger (use with caution - may log sensitive data)
-export function requestBodyLogger(): MiddlewareHandler {
-  return async (c: Context, next) => {
-    if (['POST', 'PUT', 'PATCH'].includes(c.req.method)) {
-      try {
-        const contentType = c.req.header('content-type')
-        if (contentType?.includes('application/json')) {
-          const body = await c.req.json()
-          const requestId = c.get('requestId') || 'unknown'
-
-          // Sanitize sensitive fields
-          const sanitizedBody = JSON.parse(JSON.stringify(body))
-          const sensitiveFields = [
-            'password',
-            'token',
-            'secret',
-            'apiKey',
-            'creditCard',
-          ]
-
-          const sanitize = (obj: Record<string, unknown>) => {
-            for (const key in obj) {
-              if (
-                sensitiveFields.some((field) =>
-                  key.toLowerCase().includes(field.toLowerCase())
-                )
-              ) {
-                obj[key] = '***REDACTED***'
-              } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                sanitize(obj[key] as Record<string, unknown>)
-              }
-            }
-          }
-
-          sanitize(sanitizedBody)
-
-          logger.debug(`[${requestId}] Request Body`, sanitizedBody)
-
-          // Restore body for next middleware
-          c.req.bodyCache.json = body
-        }
-      } catch {
-        // Silently fail if body parsing fails
-      }
-    }
-    await next()
   }
 }
 
