@@ -1,9 +1,11 @@
+import { Scalar } from '@scalar/hono-api-reference'
 import 'dotenv/config'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import { prettyJSON } from 'hono/pretty-json'
 
-import { authMiddleware } from './lib/auth'
+import { authMiddleware } from './auth/auth-guard'
+import { getEnv } from './env'
 import createApp from './lib/create-app'
 import { combinedLogger } from './lib/logger'
 import { rateLimit } from './lib/rate-limit'
@@ -20,7 +22,9 @@ app.use('*', rateLimit())
 app.use(
   '/*',
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+    origin: (_origin, c) => {
+      return getEnv(c).CORS_ORIGIN || 'http://localhost:3001'
+    },
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['POST', 'GET', 'OPTIONS'],
     exposeHeaders: ['Content-Length'],
@@ -45,8 +49,42 @@ app.use('*', async (c, next) => {
 const routes = [authRouter, appRouter] as const
 
 routes.forEach((route) => {
-  app.basePath('/api').route('/', route)
+  app.route('/api', route)
 })
+
+app.doc('/api/docs', (c) => ({
+  openapi: '3.1.0',
+  info: {
+    title: 'Honotreez API',
+    version: '1.0.0',
+    description: 'API documentation for Honotreez',
+  },
+  servers: [
+    {
+      url: new URL(c.req.url).origin,
+      description: 'Current server',
+    },
+  ],
+}))
+
+// Scalar API Reference
+app.get(
+  '/api/reference',
+  Scalar({
+    pageTitle: 'Honotreez API Reference',
+    theme: 'purple',
+    sources: [
+      {
+        url: '/api/docs',
+        title: 'Honotreez API',
+      },
+      {
+        url: '/api/auth/open-api/generate-schema',
+        title: 'Honotreez Auth API',
+      },
+    ],
+  })
+)
 
 app.notFound((c) => {
   return c.json({ message: 'Route Not Found' }, 404)
