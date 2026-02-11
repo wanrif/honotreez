@@ -2,6 +2,8 @@ import dayjs from 'dayjs'
 import type { Context, MiddlewareHandler } from 'hono'
 import { customAlphabet } from 'nanoid'
 
+import { getEnv } from '@/env'
+
 // ANSI color codes for terminal output
 const colors = {
   reset: '\x1b[0m',
@@ -156,7 +158,7 @@ export function combinedLogger(): MiddlewareHandler {
     }
 
     // Log request headers (optional - can be verbose)
-    if (process.env.LOG_LEVEL === 'debug') {
+    if (getEnv().LOG_LEVEL === 'debug') {
       const headers = Object.fromEntries(
         Array.from(c.req.raw.headers.entries()).filter(
           ([key]) => !['authorization', 'cookie'].includes(key.toLowerCase())
@@ -264,7 +266,7 @@ export function combinedLogger(): MiddlewareHandler {
       }
 
       // Log response headers in debug mode
-      if (process.env.LOG_LEVEL === 'debug' && !error) {
+      if (getEnv().LOG_LEVEL === 'debug' && !error) {
         const responseHeaders = Object.fromEntries(c.res.headers.entries())
         logger.debug('Response Headers', responseHeaders)
       }

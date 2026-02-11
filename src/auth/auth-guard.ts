@@ -1,3 +1,4 @@
+import { Context } from 'hono'
 import { createMiddleware } from 'hono/factory'
 import { HTTPException } from 'hono/http-exception'
 
@@ -7,6 +8,21 @@ const AUTH_MESSAGE = {
   UNAUTHORIZED: 'Unauthorized Access',
   FORBIDDEN: 'Insufficient permissions',
 } as const
+
+export const authMiddleware = async (c: Context, next: () => Promise<void>) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers })
+
+  if (!session) {
+    c.set('user', null)
+    c.set('session', null)
+
+    return next()
+  }
+
+  c.set('user', session.user)
+  c.set('session', session.session)
+  return next()
+}
 
 export const authGuard = () => {
   return createMiddleware(async (c, next) => {

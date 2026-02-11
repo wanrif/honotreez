@@ -2,11 +2,11 @@ import { hash, verify } from '@node-rs/argon2'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin as adminPlugin } from 'better-auth/plugins'
-import type { Context } from 'hono'
 
 import { ac, admin, user as userPermissions } from '@/auth/permissions'
 import db from '@/db'
 import { account, session, user, verification } from '@/db/schema/auth-schema'
+import { getEnv } from '@/env'
 
 export const hashPassword = async (password: string) => {
   const hashedPassword = await hash(password, {
@@ -81,7 +81,7 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    ...(process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN] : []),
+    ...(getEnv().CORS_ORIGIN ? [getEnv().CORS_ORIGIN] : []),
     'http://localhost:3001',
   ],
   user: {
@@ -99,19 +99,4 @@ export const auth = betterAuth({
 export interface AuthType {
   user: typeof auth.$Infer.Session.user | null
   session: typeof auth.$Infer.Session.session | null
-}
-
-export const authMiddleware = async (c: Context, next: () => Promise<void>) => {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers })
-
-  if (!session) {
-    c.set('user', null)
-    c.set('session', null)
-
-    return next()
-  }
-
-  c.set('user', session.user)
-  c.set('session', session.session)
-  return next()
 }

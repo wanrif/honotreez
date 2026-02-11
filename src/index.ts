@@ -3,7 +3,8 @@ import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import { prettyJSON } from 'hono/pretty-json'
 
-import { authMiddleware } from './lib/auth'
+import { authMiddleware } from './auth/auth-guard'
+import { getEnv } from './env'
 import createApp from './lib/create-app'
 import { combinedLogger } from './lib/logger'
 import { rateLimit } from './lib/rate-limit'
@@ -20,7 +21,9 @@ app.use('*', rateLimit())
 app.use(
   '/*',
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+    origin: (_origin, c) => {
+      return getEnv(c).CORS_ORIGIN || 'http://localhost:3001'
+    },
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['POST', 'GET', 'OPTIONS'],
     exposeHeaders: ['Content-Length'],
