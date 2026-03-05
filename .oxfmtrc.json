@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "semi": false,
+  "singleQuote": true,
+  "endOfLine": "lf",
+  "trailingComma": "es5",
+  "sortImports": {
+    "ignoreCase": true,
+    "newlinesBetween": true,
+    "internalPattern": ["@/"],
+    "customGroups": [
+      {
+        "groupName": "alias-db",
+        "selector": "internal",
+        "elementNamePattern": ["@/db", "@/db/**"]
+      },
+      {
+        "groupName": "alias-lib",
+        "selector": "internal",
+        "elementNamePattern": ["@/lib", "@/lib/**"]
+      },
+      {
+        "groupName": "alias-routes",
+        "selector": "internal",
+        "elementNamePattern": ["@/routes", "@/routes/**"]
+      },
+      {
+        "groupName": "alias-types",
+        "selector": "internal",
+        "elementNamePattern": ["@/types", "@/types/**"]
+      },
+      {
+        "groupName": "alias-internal",
+        "selector": "internal",
+        "elementNamePattern": ["@/**"]
+      }
+    ],
+    "groups": [
+      "builtin",
+      "external",
+      "alias-db",
+      "alias-lib",
+      "alias-routes",
+      "alias-types",
+      "alias-internal",
+      ["parent", "sibling", "index"],
+      "unknown"
+    ]
+  }
+}

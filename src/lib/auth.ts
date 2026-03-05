@@ -3,9 +3,10 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin as adminPlugin } from 'better-auth/plugins'
 
-import { ac, admin, user as userPermissions } from '@/auth/permissions'
 import db from '@/db'
 import { account, session, user, verification } from '@/db/schema/auth-schema'
+
+import { ac, admin, user as userPermissions } from '@/auth/permissions'
 import { getEnv } from '@/env'
 
 export const hashPassword = async (password: string) => {

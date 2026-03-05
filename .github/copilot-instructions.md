@@ -76,7 +76,7 @@ bun run db:reset       # Reset database
 ```bash
 bun run dev            # Hot-reload server (--hot flag)
 bun run start          # Production mode
-bun run format         # Prettier with import sorting
+bun run format         # Oxfmt with import sorting
 ```
 
 ### Environment Variables Required
@@ -102,7 +102,7 @@ bun run format         # Prettier with import sorting
 ## Code Conventions
 
 - **Path aliases:** Use `@/` for [src/](../src/) directory (configured in tsconfig)
-- **Imports:** Sorted automatically via `@trivago/prettier-plugin-sort-imports`
+- **Imports:** Sorted automatically via Oxfmt `sortImports`
 - **Type safety:** Auth context types defined as `AuthType` interface in [src/lib/auth.ts](../src/lib/auth.ts)
 - **Error handling:** Use `HTTPException` from `hono/http-exception` with status codes
 - **Constants:** Define in SCREAMING_CASE objects (e.g., `AUTH_MESSAGE` in guards)

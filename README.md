@@ -14,7 +14,7 @@ honotreez is a fast, secure, and scalable backend starter template featuring rol
 - 🔒 **Security First** - Rate limiting, CORS, non-root containers
 - 📊 **Database Tools** - Migrations, seeding, and Drizzle Studio
 - 📝 **TypeScript** - Full type safety with path aliases
-- 🎨 **Code Quality** - Prettier with auto-import sorting
+- 🎨 **Code Quality** - Oxfmt with built-in import sorting and Oxlint
 - 📈 **Logging** - Colored request/response logging with auto-redaction
 
 ## 🚀 Quick Start
@@ -263,12 +263,20 @@ import { generateId } from '@/lib/utils'
 import { user } from './auth-schema'
 
 export const posts = pgTable('posts', {
-  id: text('id').primaryKey().$defaultFn(() => generateId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => generateId()),
   title: text('title').notNull(),
   content: text('content').notNull(),
-  authorId: text('author_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
-  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at')
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp('updated_at')
+    .$defaultFn(() => new Date())
+    .notNull(),
 })
 ```
 
@@ -284,7 +292,11 @@ bun run db:migrate
 ### Rate Limiting
 
 ```typescript
-import { rateLimit, rateLimitPresets, createUserRateLimit } from '@/lib/rate-limit'
+import {
+  rateLimit,
+  rateLimitPresets,
+  createUserRateLimit,
+} from '@/lib/rate-limit'
 
 // Global rate limit (already applied in src/index.ts)
 app.use('*', rateLimit({ limit: 100, windowMs: 60000 }))
@@ -337,17 +349,20 @@ See [DOCKER_USAGE.md](DOCKER_USAGE.md) for complete documentation.
 
 ## 📝 Available Scripts
 
-| Command               | Description                              |
-| --------------------- | ---------------------------------------- |
-| `bun run dev`         | Start development server with hot-reload |
-| `bun run start`       | Start production server                  |
-| `bun run format`      | Format code with Prettier                |
-| `bun run db:generate` | Generate database migrations             |
-| `bun run db:migrate`  | Run database migrations                  |
-| `bun run db:push`     | Push schema to database (dev only)       |
-| `bun run db:studio`   | Open Drizzle Studio GUI                  |
-| `bun run db:seed`     | Seed the database                        |
-| `bun run db:reset`    | Reset the database                       |
+| Command                | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `bun run dev`          | Start development server with hot-reload |
+| `bun run start`        | Start production server                  |
+| `bun run format`       | Format code with Oxfmt                   |
+| `bun run format:check` | Check formatting without writing changes |
+| `bun run lint`         | Lint code with Oxlint                    |
+| `bun run lint:fix`     | Lint and auto-fix with Oxlint            |
+| `bun run db:generate`  | Generate database migrations             |
+| `bun run db:migrate`   | Run database migrations                  |
+| `bun run db:push`      | Push schema to database (dev only)       |
+| `bun run db:studio`    | Open Drizzle Studio GUI                  |
+| `bun run db:seed`      | Seed the database                        |
+| `bun run db:reset`     | Reset the database                       |
 
 ## 🏗️ Tech Stack
 
