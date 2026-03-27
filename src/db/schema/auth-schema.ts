@@ -1,13 +1,19 @@
-import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
-
-import { generateId } from '@/lib/utils'
+import { randomUUIDv7 } from 'bun'
+import {
+  boolean,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 export const user = pgTable(
   'user',
   {
-    id: text('id')
+    id: uuid('id')
       .primaryKey()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => randomUUIDv7()),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
     emailVerified: boolean('email_verified')
@@ -31,16 +37,16 @@ export const user = pgTable(
 export const session = pgTable(
   'session',
   {
-    id: text('id')
+    id: uuid('id')
       .primaryKey()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => randomUUIDv7()),
     expiresAt: timestamp('expires_at').notNull(),
     token: text('token').notNull().unique(),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull(),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
-    userId: text('user_id')
+    userId: uuid('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     impersonatedBy: text('impersonated_by'),
@@ -54,12 +60,12 @@ export const session = pgTable(
 export const account = pgTable(
   'account',
   {
-    id: text('id')
+    id: uuid('id')
       .primaryKey()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => randomUUIDv7()),
     accountId: text('account_id').notNull(),
     providerId: text('provider_id').notNull(),
-    userId: text('user_id')
+    userId: uuid('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     accessToken: text('access_token'),
@@ -78,9 +84,9 @@ export const account = pgTable(
 export const verification = pgTable(
   'verification',
   {
-    id: text('id')
+    id: uuid('id')
       .primaryKey()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => randomUUIDv7()),
     identifier: text('identifier').notNull(),
     value: text('value').notNull(),
     expiresAt: timestamp('expires_at').notNull(),
