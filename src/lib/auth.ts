@@ -2,6 +2,7 @@ import { hash, verify } from '@node-rs/argon2'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin as adminPlugin } from 'better-auth/plugins'
+import { randomUUIDv7 } from 'bun'
 
 import db from '@/db'
 import { account, session, user, verification } from '@/db/schema/auth-schema'
@@ -35,6 +36,11 @@ export const verifyPassword = async (
 }
 
 export const auth = betterAuth({
+  advanced: {
+    database: {
+      generateId: () => randomUUIDv7(),
+    },
+  },
   database: drizzleAdapter(db, {
     provider: 'pg', // or "mysql", "sqlite"
     schema: {
