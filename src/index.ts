@@ -56,13 +56,13 @@ app.doc('/api/docs', (c) => ({
   openapi: '3.1.0',
   info: {
     title: 'Honotreez API',
-    version: '1.0.0',
+    version: '0.0.1',
     description: 'API documentation for Honotreez',
   },
   servers: [
     {
       url: new URL(c.req.url).origin,
-      description: 'Current server',
+      description: 'Local server',
     },
   ],
 }))
