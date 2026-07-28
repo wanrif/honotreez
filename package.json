@@ -19,7 +19,7 @@
     "@node-rs/argon2": "^2.0.2",
     "@t3-oss/env-core": "^0.13.11",
     "better-auth": "^1.6.25",
-    "dayjs": "^1.11.20",
+    "dayjs": "^1.11.21",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.9",
