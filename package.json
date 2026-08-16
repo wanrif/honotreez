@@ -20,7 +20,7 @@
     "@t3-oss/env-core": "^0.13.11",
     "better-auth": "^1.6.25",
     "dayjs": "^1.11.20",
-    "dotenv": "^17.3.1",
+    "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.9",
     "nanoid": "^5.1.7",
