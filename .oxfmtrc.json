@@ -6,6 +6,7 @@
   "singleQuote": true,
   "endOfLine": "lf",
   "trailingComma": "es5",
+  "ignorePatterns": ["**/.github/dependabot.yml", "**/node_modules/**"],
   "sortImports": {
     "ignoreCase": true,
     "newlinesBetween": true,

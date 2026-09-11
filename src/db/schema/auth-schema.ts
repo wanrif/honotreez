@@ -1,7 +1,10 @@
 import { randomUUIDv7 } from 'bun'
+import { relations } from 'drizzle-orm'
 import {
+  bigint,
   boolean,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -16,18 +19,14 @@ export const user = pgTable(
       .$defaultFn(() => randomUUIDv7()),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
-    emailVerified: boolean('email_verified')
-      .$defaultFn(() => false)
-      .notNull(),
+    emailVerified: boolean('email_verified').default(false).notNull(),
     image: text('image'),
-    createdAt: timestamp('created_at')
-      .$defaultFn(() => /* @__PURE__ */ new Date())
-      .notNull(),
+    createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at')
-      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
-    role: text('role'),
-    banned: boolean('banned'),
+    role: text('role').default('user'),
+    banned: boolean('banned').default(false),
     banReason: text('ban_reason'),
     banExpires: timestamp('ban_expires'),
   },
@@ -43,7 +42,9 @@ export const session = pgTable(
     expiresAt: timestamp('expires_at').notNull(),
     token: text('token').notNull().unique(),
     createdAt: timestamp('created_at').notNull(),
-    updatedAt: timestamp('updated_at').notNull(),
+    updatedAt: timestamp('updated_at')
+      .$onUpdate(() => new Date())
+      .notNull(),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
     userId: uuid('user_id')
@@ -76,7 +77,9 @@ export const account = pgTable(
     scope: text('scope'),
     password: text('password'),
     createdAt: timestamp('created_at').notNull(),
-    updatedAt: timestamp('updated_at').notNull(),
+    updatedAt: timestamp('updated_at')
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => [index('account_user_id_index').on(table.userId)]
 )
@@ -90,12 +93,36 @@ export const verification = pgTable(
     identifier: text('identifier').notNull(),
     value: text('value').notNull(),
     expiresAt: timestamp('expires_at').notNull(),
-    createdAt: timestamp('created_at').$defaultFn(
-      () => /* @__PURE__ */ new Date()
-    ),
-    updatedAt: timestamp('updated_at').$defaultFn(
-      () => /* @__PURE__ */ new Date()
-    ),
+    createdAt: timestamp('created_at').notNull(),
+    updatedAt: timestamp('updated_at')
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => [index('verification_identifier_index').on(table.identifier)]
 )
+
+export const rateLimit = pgTable('rate_limit', {
+  id: text('id').primaryKey(),
+  key: text('key').notNull().unique(),
+  count: integer('count').notNull(),
+  lastRequest: bigint('last_request', { mode: 'number' }).notNull(),
+})
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+}))
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}))
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}))
